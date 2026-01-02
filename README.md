@@ -1,63 +1,180 @@
-<<<<<<< HEAD
-# bank-transfer-api
-=======
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bank Transfer Service (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Deskripsi
 
-## About Laravel
+Project ini merupakan implementasi **Bank Transfer Service** menggunakan **Laravel** sebagai bagian dari technical test.  
+Sistem ini menangani transfer uang dari rekening perusahaan ke rekening tujuan dengan berbagai **aturan bisnis**, **jadwal transfer**, dan **prioritas bank**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Fokus utama project:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   Clean Architecture
+-   Business Logic
+-   Error Handling
+-   Logging menggunakan SQLite
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Teknologi yang Digunakan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+-   PHP 8.2+
+-   Laravel 11
+-   SQLite (khusus untuk logging transfer)
+-   REST API
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Bank yang Didukung
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Bank         | Kode | Status          |
+| ------------ | ---- | --------------- |
+| Bank Alpha   | A01  | Terhubung       |
+| Bank Beta    | B02  | Terhubung       |
+| Bank Charlie | C03  | Terhubung       |
+| Bank Delta   | D04  | Belum Terhubung |
+| Bank Echo    | E05  | Belum Terhubung |
+| Bank Fanta   | F06  | Belum Terhubung |
 
-### Premium Partners
+> Bank yang belum terhubung tetap bisa digunakan melalui **Online Transfer** menggunakan bank prioritas.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## Jenis Transfer
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Inhouse Transfer**  
+   Transfer ke rekening pada bank yang sama (lebih cepat & murah)
 
-## Code of Conduct
+2. **Online Transfer**  
+   Transfer antar bank dengan aturan jadwal dan prioritas bank
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Mata Uang yang Didukung
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+-   IDR (Indonesian Rupiah)
+-   USD (US Dollar)
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
->>>>>>> 7f411f9 (initial init laravel ke github)
+## Jadwal Transfer Online & Prioritas Bank
+
+| Waktu         | Prioritas Bank         | Keterangan                            |
+| ------------- | ---------------------- | ------------------------------------- |
+| 00:00 - 03:59 | ❌                     | Tidak ada transfer (ditunda ke 04:00) |
+| 04:00 - 09:59 | Alpha → Beta → Charlie | Semua mata uang                       |
+| 10:00 - 16:59 | Beta → Charlie → Alpha | Semua mata uang                       |
+| 17:00 - 21:59 | Charlie → Alpha → Beta | **IDR saja**                          |
+| 22:00 - 23:59 | Beta                   | Hanya Bank Beta                       |
+
+**Catatan Khusus**
+
+-   Jika bank prioritas pertama gagal → fallback ke bank berikutnya
+-   Transfer USD pada jam 17:00–21:59 akan **ditunda ke jam 22:00**
+-   Jika semua bank prioritas gagal → transaksi gagal
+
+---
+
+## Arsitektur & Desain
+
+Project ini menggunakan pendekatan:
+
+-   **DTO (Data Transfer Object)** untuk request & response
+-   **Service Layer** untuk business logic
+-   **Enum** untuk validasi data bisnis
+-   **Interface Bank** untuk mendukung Open/Closed Principle
+
+## Struktur utama:
+
+    app/
+    ├── DTO/
+    ├── Services/
+    ├── Banks/
+    ├── Enums/
+    └── Models/
+
+## API Endpoint
+
+### Transfer uang
+
+POST /api/transfer
+
+#### Request Body
+
+```json
+{
+  "from_bank": "A01",
+  "to_bank": "B02",
+  "to_account": "123456789",
+  "amount": 100000,
+  "currency": "IDR",
+  "time": "10:00"
+}
+
+  - Response Sukses:
+  {
+  "success": true,
+  "message": "Transfer berhasil via bank B02",
+  "scheduledAt": null
+  }
+
+  - Response Ditunda :
+  {
+  "success": false,
+  "message": "Transfer ditunda",
+  "scheduledAt": "2026-01-02T04:00:00"
+  }
+
+=> Test Scenario yang Diimplementasikan
+
+      1. Transfer Inhouse Berhasil
+      2. Transfer Online dengan Fallback Bank
+      3. Transfer USD Ditunda
+      4. Transfer di Luar Jam Operasional
+      5. Semua skenario telah diuji dan berjalan sesuai requirement.
+
+
+=> Logging Database (SQLite)
+  Lokasi Database :
+    database/database.sqlite
+  Tabel :
+    transfer_logs
+  Kolom Utama :
+    - from_bank
+    - to_bank
+    - amount
+    - currency
+    - status
+    - scheduled_at
+    - created_at
+
+=> Cara Menjalankan Projek
+    1. Install Dependency
+        composer install
+
+    2. Setup Environment
+        php artisan key:generate
+
+      - set database di .env:
+        DB_CONNECTION=sqlite
+        DB_DATABASE=database/database.sqlite
+    3. Migrasi Database
+        php artisan migrate
+    4. Jalankan Server
+        php artisan serve
+
+=> Asumsi Yang Digunakan :
+
+    - Tidak ada real bank API → kegagalan bank disimulasikan
+    - Database tidak digunakan sebagai sumber transaksi utama
+    - Semua request dianggap valid secara format (fokus pada business logic)
+
+=> Catatan Akhir
+  Project ini dibuat dengan fokus pada:
+
+      - Struktur kode
+      - Keterbacaan
+      - Pemisahan tanggung jawab
+      - Kesesuaian dengan requirement tes
+
+
+Terima kasih 🙏
+```

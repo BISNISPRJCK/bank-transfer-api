@@ -10,6 +10,12 @@ class AlphaBank implements BankInterface
   public function sendMoney(TransferRequest $request): bool
   {
 
+    // simulasi alpha gagal untuk online transfer
+
+    if ($request->fromBank !== $request->toBank) {
+      return false;
+    }
+
     return true;
   }
 }

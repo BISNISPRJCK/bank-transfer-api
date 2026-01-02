@@ -6,9 +6,9 @@ use DateTime;
 
 class TransferResult
 {
-  public function __construc(
+  public function __construct(
     public bool $success,
     public string $message,
-    public ?\DateTime $scheduleAt = null
+    public ?DateTime $scheduledAt = null
   ) {}
 }
